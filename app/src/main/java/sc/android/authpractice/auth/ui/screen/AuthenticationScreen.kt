@@ -48,9 +48,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import sc.android.authpractice.auth.presentation.viewmodel.AuthViewModel
+import sc.android.authpractice.auth.validation.AuthValidator
 
 @Composable
 fun AuthenticationScreen(
@@ -143,7 +145,7 @@ fun AuthenticationScreen(
                 ) {
 
                     //email field
-                    LoginField(
+                    CredentialField(
                         value = email.value,
                         label = "Enter email",
                         onValueChange = { email.value = it },
@@ -154,7 +156,7 @@ fun AuthenticationScreen(
                     )
 
                     //password field
-                    LoginField(
+                    CredentialField(
                         value = password.value,
                         label = "Enter password",
                         onValueChange = { password.value = it },
@@ -171,10 +173,25 @@ fun AuthenticationScreen(
                         visualTransformation =
                             if (passwordVisible.value) VisualTransformation.None
                             else PasswordVisualTransformation(),
-                        onTrailingIconClick = { passwordVisible.value = !passwordVisible.value }
+                        onTrailingIconClick = { passwordVisible.value = !passwordVisible.value },
+                        supportingText = {
+                            Text(
+                                text = "${password.value.length}/${AuthValidator.MAX_PASSWORD_LENGTH}",
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold,
+                                color =
+                                    if (password.value.length >= AuthValidator.MIN_PASSWORD_LENGTH) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.error,
+                                textAlign = TextAlign.End,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 4.dp)
+                            )
+                        }
                     )
 
                     Spacer(Modifier.height(8.dp))
+
 
                     Button(
                         onClick = {
@@ -244,7 +261,7 @@ fun AuthenticationScreen(
 }
 
 @Composable
-fun LoginField(
+fun CredentialField(
     value : String,
     label : String,
     onValueChange : (String) -> Unit,
@@ -255,7 +272,8 @@ fun LoginField(
     trailingIcon : ImageVector? = null,
     trailingIconContentDescription : String? = null,
     onTrailingIconClick : (() -> Unit)? = null,
-    visualTransformation: VisualTransformation = VisualTransformation.None
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    supportingText: (@Composable () -> Unit)? = null,
 ){
 
     OutlinedTextField(
@@ -320,7 +338,8 @@ fun LoginField(
             errorBorderColor = MaterialTheme.colorScheme.error,
             errorLeadingIconColor = MaterialTheme.colorScheme.error,
             errorTrailingIconColor = MaterialTheme.colorScheme.error,
-        )
+        ),
+        supportingText=supportingText
     )
 }
 
