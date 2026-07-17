@@ -16,6 +16,8 @@ import sc.android.authpractice.auth.data.model.UserData
 import sc.android.authpractice.auth.data.repository.AuthRepository
 import sc.android.authpractice.auth.presentation.authstate.AuthState
 import sc.android.authpractice.auth.presentation.event.UiEvent
+import sc.android.authpractice.auth.validation.AuthValidator
+import sc.android.authpractice.auth.validation.ValidationResult
 
 class AuthViewModel(
     private val repository: AuthRepository
@@ -74,15 +76,14 @@ class AuthViewModel(
 
             val trimmedEmail = email.trim()
 
-            if (trimmedEmail.isBlank()) {
-                emitErrorMessage("Email cannot be empty!")
+            if(!handleValidation(AuthValidator.validateEmail(trimmedEmail))){
                 return@launch
             }
 
-            if (password.isBlank()) {
-                emitErrorMessage("Password cannot be empty!")
+            if(!handleValidation(AuthValidator.validatePassword(password))){
                 return@launch
             }
+
 
             _authState.value = AuthState.Authenticating
 
@@ -129,15 +130,13 @@ class AuthViewModel(
             // Normalize the email by removing leading and trailing whitespace.
             val trimmedEmail = email.trim()
 
-            // Stop the login process if the email is empty.
-            if (trimmedEmail.isBlank()){
-                emitErrorMessage("Email cannot be empty!")
+            //validate email
+            if(!handleValidation(AuthValidator.validateEmail(trimmedEmail))){
                 return@launch
             }
 
-            // Stop the login process if the password is empty.
-            if (password.isBlank()){
-                emitErrorMessage("Password cannot be empty!")
+            //validate password
+            if(!handleValidation((AuthValidator.validatePassword(password)))){
                 return@launch
             }
 
@@ -226,4 +225,21 @@ class AuthViewModel(
         }
     }
 
+    /**
+     * Processes a validation result.
+     *
+     * Returns true when validation succeeds.
+     * Emits a SnackBar message and returns false when validation fails.
+     */
+    private suspend fun handleValidation(
+        result: ValidationResult
+    ): Boolean{
+        return when(result){
+            ValidationResult.Success ->true
+            is ValidationResult.Failure ->{
+                emitErrorMessage(result.message)
+                false
+            }
+        }
+    }
 }
