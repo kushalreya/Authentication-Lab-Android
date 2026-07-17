@@ -117,4 +117,19 @@ class FirebaseAuthRepository (
     override fun logout(){
         dataSource.logout()
     }
+
+    /**
+     * Sends a password reset email to the provided email address.
+     * Returns a successful Result if the password reset email is sent,
+     * or a failed Result if the request fails.
+     */
+
+    override suspend fun forgotPassword(email: String): Result<Unit> {
+        return try{
+            dataSource.forgotPassword(email)
+            Result.success(Unit)
+        }catch(exception: Exception){
+            Result.failure(exception)
+        }
+    }
 }

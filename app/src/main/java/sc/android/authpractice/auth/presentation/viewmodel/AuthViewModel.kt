@@ -70,7 +70,8 @@ class AuthViewModel(
      */
     fun register(
         email: String,
-        password: String
+        password: String,
+        confirmPassword: String
     ){
         viewModelScope.launch {
 
@@ -84,6 +85,9 @@ class AuthViewModel(
                 return@launch
             }
 
+            if(!handleValidation(AuthValidator.validateMatchingPassword(password,confirmPassword))){
+                return@launch
+            }
 
             _authState.value = AuthState.Authenticating
 
@@ -99,7 +103,7 @@ class AuthViewModel(
                 } else {
                     _currentUser.value = null
                     _authState.value = AuthState.Unauthenticated
-                    emitErrorMessage("Unexpected authentication error occurred.")
+                    emitMessage("Unexpected authentication error occurred.")
                 }
 
             } else {
@@ -108,7 +112,7 @@ class AuthViewModel(
 
                 _currentUser.value = null
                 _authState.value = AuthState.Unauthenticated
-                emitErrorMessage(errorMessage)
+                emitMessage(errorMessage)
 
             }
         }
@@ -159,7 +163,7 @@ class AuthViewModel(
                     // A successful result without user data is unexpected.
                     _currentUser.value = null
                     _authState.value = AuthState.Unauthenticated
-                    emitErrorMessage("Unexpected authentication error occurred.")
+                    emitMessage("Unexpected authentication error occurred.")
                 }
 
             } else {
@@ -170,7 +174,7 @@ class AuthViewModel(
                 // Authentication failed. Emit a user-friendly error message
                 _currentUser.value = null
                 _authState.value = AuthState.Unauthenticated
-                emitErrorMessage(errorMessage)
+                emitMessage(errorMessage)
 
             }
         }
@@ -192,7 +196,7 @@ class AuthViewModel(
      * the presentation layer to display
      * an error message.
      */
-    private suspend fun emitErrorMessage(message : String){
+    private suspend fun emitMessage(message : String){
         _uiEvents.emit(UiEvent.ShowSnackBar(message))
     }
 
@@ -237,9 +241,34 @@ class AuthViewModel(
         return when(result){
             ValidationResult.Success ->true
             is ValidationResult.Failure ->{
-                emitErrorMessage(result.message)
+                emitMessage(result.message)
                 false
             }
         }
+    }
+
+    //forgot password
+    fun forgotPassword(email: String){
+
+        viewModelScope.launch {
+            val trimmedEmail = email.trim()
+
+            if(!handleValidation(AuthValidator.validateEmail(trimmedEmail))){
+                return@launch
+            }
+
+            val result = repository.forgotPassword(trimmedEmail)
+
+            result.fold(
+                onSuccess = {
+                    emitMessage("Password reset email sent successfully")
+                },
+                onFailure = {
+                    exception ->
+                    emitMessage(getReadableErrorMessage(exception))
+                }
+            )
+        }
+
     }
 }

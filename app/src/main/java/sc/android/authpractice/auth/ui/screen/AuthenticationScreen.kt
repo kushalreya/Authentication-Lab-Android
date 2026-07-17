@@ -88,6 +88,9 @@ fun AuthenticationScreen(
     val password = remember { mutableStateOf("") }
     val passwordVisible = remember { mutableStateOf(false) }
 
+    val confirmPassword = remember { mutableStateOf("") }
+    val confirmPasswordVisible = remember { mutableStateOf(false) }
+
     val focusManager = LocalFocusManager.current
     val softwareKeyboardController = LocalSoftwareKeyboardController.current
     val dismissKeyboard = {
@@ -161,7 +164,7 @@ fun AuthenticationScreen(
                         label = "Enter password",
                         onValueChange = { password.value = it },
                         keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Done,
+                        imeAction = ImeAction.Next,
                         leadingIcon = Icons.Default.Password,
                         leadingIconContentDescription = "password",
                         trailingIcon =
@@ -190,6 +193,29 @@ fun AuthenticationScreen(
                         }
                     )
 
+                    //confirm password field
+                    if(!isLoginMode.value){
+                        CredentialField(
+                            value = confirmPassword.value,
+                            label = "Confirm password",
+                            onValueChange = { confirmPassword.value = it },
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Done,
+                            leadingIcon = Icons.Default.Password,
+                            leadingIconContentDescription = "password",
+                            trailingIcon =
+                                if (confirmPasswordVisible.value) Icons.Default.VisibilityOff
+                                else Icons.Default.Visibility,
+                            trailingIconContentDescription =
+                                if (confirmPasswordVisible.value) "hide password"
+                                else "show password",
+                            visualTransformation =
+                                if (confirmPasswordVisible.value) VisualTransformation.None
+                                else PasswordVisualTransformation(),
+                            onTrailingIconClick = { confirmPasswordVisible.value = !confirmPasswordVisible.value }
+                        )
+                    }
+
                     Spacer(Modifier.height(8.dp))
 
 
@@ -199,9 +225,9 @@ fun AuthenticationScreen(
 
                             if (isLoginMode.value)
                                 viewModel.login(email.value, password.value)
-                            //todo add register function from VM
+
                             else {
-                                viewModel.register(email.value,password.value)
+                                viewModel.register(email.value,password.value, confirmPassword.value)
                             }
                         },
                         elevation = ButtonDefaults.buttonElevation(
@@ -214,7 +240,14 @@ fun AuthenticationScreen(
                             contentColor = MaterialTheme.colorScheme.onPrimary,
                             disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f)
                         ),
-                        enabled = email.value.isNotBlank() && password.value.isNotBlank()
+                        enabled =
+                            email.value.isNotBlank() &&
+                                    password.value.isNotBlank() &&
+                                    password.value.length >= AuthValidator.MIN_PASSWORD_LENGTH &&
+                                    (
+                                            isLoginMode.value ||
+                                                    confirmPassword.value.isNotBlank()
+                                            )
                     ) {
                         Text(
                             text = buttonText,
@@ -243,7 +276,11 @@ fun AuthenticationScreen(
                 )
 
                 TextButton(
-                    onClick = { isLoginMode.value = !isLoginMode.value }
+                    onClick = {
+                        isLoginMode.value = !isLoginMode.value
+                        password.value=""
+                        confirmPassword.value=""
+                    }
                 ) {
                     Text(
                         text = actionText,

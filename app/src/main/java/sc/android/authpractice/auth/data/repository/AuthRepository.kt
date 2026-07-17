@@ -42,4 +42,13 @@ interface AuthRepository {
      */
 
     fun logout()
+
+    /**
+     * Sends a password reset email to the provided email address.
+     * Returns a successful Result if the password reset email is sent,
+     * or a failed Result if the request fails.
+     */
+    suspend fun forgotPassword(
+        email: String
+    ): Result<Unit>
 }

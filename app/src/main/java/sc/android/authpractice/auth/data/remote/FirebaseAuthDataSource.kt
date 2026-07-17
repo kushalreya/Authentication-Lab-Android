@@ -62,4 +62,13 @@ class FirebaseAuthDataSource {
         firebaseAuth.signOut()
     }
 
+    /**
+     * Sends a password reset email to the provided email address.
+     * This function waits until Firebase completes the request.
+     * Any Firebase exceptions are propagated to the repository layer.
+     */
+    suspend fun forgotPassword(email: String){
+        firebaseAuth.sendPasswordResetEmail(email).await()
+    }
+
 }
