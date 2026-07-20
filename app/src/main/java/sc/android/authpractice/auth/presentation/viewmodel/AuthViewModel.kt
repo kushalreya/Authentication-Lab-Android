@@ -261,7 +261,8 @@ class AuthViewModel(
 
             result.fold(
                 onSuccess = {
-                    emitMessage("Password reset email sent successfully")
+                    emitMessage("If the email is registered,\n" +
+                            "you'll receive password reset instructions shortly.")
                 },
                 onFailure = {
                     exception ->

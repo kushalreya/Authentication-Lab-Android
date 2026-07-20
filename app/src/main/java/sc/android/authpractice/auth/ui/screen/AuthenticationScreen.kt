@@ -17,6 +17,7 @@ import sc.android.authpractice.auth.presentation.viewmodel.AuthViewModel
 import sc.android.authpractice.auth.ui.component.AuthScreenCard
 import sc.android.authpractice.auth.ui.component.AuthScreenFooter
 import sc.android.authpractice.auth.ui.component.AuthScreenHeader
+import sc.android.authpractice.auth.ui.component.ForgotPassword
 import sc.android.authpractice.auth.validation.AuthValidator
 
 @Composable
@@ -178,6 +179,9 @@ fun AuthenticationScreen(
                         AuthScreenMode.FORGOT_PASSWORD ->
                             viewModel.forgotPassword(email.value)
                     }
+                },
+                navigateToLogin = {
+                    navigateTo(AuthScreenMode.LOGIN)
                 }
             )
 
@@ -185,7 +189,6 @@ fun AuthenticationScreen(
             AuthScreenFooter(
                 footerText = screenConfig.footerText,
                 actionText = screenConfig.actionText,
-                isLogin = isLogin,
                 onActionClick = {
                     navigateTo(
                         when (currentScreen) {
@@ -196,13 +199,15 @@ fun AuthenticationScreen(
                     )
 
                     clearCredentials()
-                },
-                onForgotPasswordClick = {
+                }
+            )
+            ForgotPassword(
+                isLogin,
+                onForgotPasswordClick ={
                     navigateTo(AuthScreenMode.FORGOT_PASSWORD)
                     clearPasswords()
                 }
             )
-
         }
     }
 
