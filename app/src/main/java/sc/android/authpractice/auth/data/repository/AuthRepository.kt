@@ -18,14 +18,15 @@ interface AuthRepository {
 
     /**
      * Attempts to create a new user account using the provided
-     * email and password.
+     * name, email and password.
      * Returns the authenticated user if registration succeeds,
      * or a failure if registration fails.
      */
     suspend fun register(
+        name: String,
         email: String,
         password: String
-    ) : Result<UserData>
+    ) : Result<Unit>
 
     /**
      * Attempts to authenticate the user using the provided email and password.
@@ -51,4 +52,20 @@ interface AuthRepository {
     suspend fun forgotPassword(
         email: String
     ): Result<Unit>
+
+    /**
+     * Sends another email verification link to the currently
+     * authenticated user.
+     * Returns a successful Result if the verification email
+     * is sent, or a failed Result if the request fails.
+     */
+    suspend fun resendVerificationEmail(): Result<Unit>
+
+    /**
+     * Refreshes the currently authenticated user from Firebase
+     * and returns whether their email has been verified.
+     * Returns a failed Result if no authenticated user exists
+     * or if the refresh request fails.
+     */
+    suspend fun isEmailVerified(): Result<Boolean>
 }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Password
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -25,6 +26,8 @@ import sc.android.authpractice.auth.validation.AuthValidator
 
 @Composable
 fun AuthScreenCard(
+    name: String,
+    onNameChange: (String) -> Unit,
     email: String,
     onEmailChange: (String) -> Unit,
 
@@ -72,6 +75,21 @@ fun AuthScreenCard(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
+            //name field
+            if(isRegister){
+                AuthOutlinedTextField(
+                    value = name,
+                    label = "Enter Name",
+                    onValueChange = onNameChange,
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Next,
+                    leadingIcon = Icons.Default.Person,
+                    leadingIconContentDescription = "name",
+                )
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
 
             //email field
             AuthOutlinedTextField(

@@ -3,6 +3,7 @@ package sc.android.authpractice.auth.data.remote
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.userProfileChangeRequest
 import kotlinx.coroutines.tasks.await
 
 /**
@@ -24,6 +25,26 @@ class FirebaseAuthDataSource {
     }
 
     /**
+     * Updates the currently authenticated Firebase user's
+     * profile information.
+     *
+     * Stores the provided display name in Firebase Authentication.
+     *
+     * Throws an exception if the profile update fails.
+     */
+
+    suspend fun updateUserProfile(
+        user: FirebaseUser,
+        name: String
+    ){
+        val profileUpdates = userProfileChangeRequest{
+            displayName=name
+        }
+        user.updateProfile(profileUpdates).await()
+    }
+
+
+    /**
      * Attempts to create a new Firebase Authentication account
      * using the provided email and password.
      * Returns the Firebase authentication result if successful.
@@ -36,6 +57,18 @@ class FirebaseAuthDataSource {
         return firebaseAuth
             .createUserWithEmailAndPassword(email, password)
             .await()
+    }
+
+    /**
+     * Sends an email verification link to the currently
+     * authenticated Firebase user.
+     * This function waits until Firebase completes the request.
+     * Any Firebase exceptions are propagated to the repository layer.
+     */
+    suspend fun sendVerificationEmail(
+        user: FirebaseUser
+    ){
+        user.sendEmailVerification().await()
     }
 
     /**
@@ -70,5 +103,15 @@ class FirebaseAuthDataSource {
     suspend fun forgotPassword(email: String){
         firebaseAuth.sendPasswordResetEmail(email).await()
     }
+
+    /**
+     * Refreshes the currently authenticated Firebase user
+     * from the Firebase server.
+     * This function waits until Firebase completes the request.
+     */
+    suspend fun reloadUser(user: FirebaseUser){
+        user.reload().await()
+    }
+
 
 }

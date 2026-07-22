@@ -9,6 +9,7 @@ import sc.android.authpractice.auth.presentation.viewmodel.AuthViewModel
 import sc.android.authpractice.auth.ui.screen.HomeScreen
 import sc.android.authpractice.auth.ui.screen.LoadingScreen
 import sc.android.authpractice.auth.ui.screen.AuthenticationScreen
+import sc.android.authpractice.auth.ui.screen.EmailVerificationScreen
 
 /**
  * Root composable for the authentication flow.
@@ -36,6 +37,8 @@ fun AuthApp(
         AuthState.Authenticating -> LoadingScreen("Authenticating User")
 
         AuthState.Authenticated -> HomeScreen(viewModel)
+
+        AuthState.EmailVerificationRequired -> EmailVerificationScreen(viewModel)
 
     }
 }

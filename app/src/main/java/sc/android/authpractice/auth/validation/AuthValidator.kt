@@ -51,7 +51,7 @@ object AuthValidator {
     }
 
     //validate password confirmation field
-    fun validateMatchingPassword (
+    fun validateMatchingPasswords (
         password : String,
         confirmPassword : String
     ) : ValidationResult {

@@ -1,5 +1,7 @@
 package sc.android.authpractice.auth.data.repository
 
+import android.R.attr.name
+import android.R.attr.password
 import sc.android.authpractice.auth.data.model.UserData
 import sc.android.authpractice.auth.data.remote.FirebaseAuthDataSource
 
@@ -32,6 +34,7 @@ class FirebaseAuthRepository (
             else -> {
                 UserData(
                     uid = firebaseUser.uid,
+                    name= firebaseUser.displayName.orEmpty(),
                     email = userEmail
                 )
             }
@@ -40,33 +43,31 @@ class FirebaseAuthRepository (
     }
 
     /**
-     * Creates a new Firebase Authentication account and
-     * maps the authenticated Firebase user to the application's
-     * UserData model.
-     * Returns a Result containing the authenticated user
-     * or the registration failure.
+     * Creates a new Firebase Authentication account,
+     * updates the user's profile with the provided display name,
+     * sends an email verification link,
+     * and returns a successful Result when all operations complete.
+     *
+     * Returns a failed Result if any step in the registration
+     * process fails.
      */
     override suspend fun register(
+        name: String,
         email: String,
         password: String
-    ): Result<UserData> {
+    ): Result<Unit> {
 
-        try {
+        return try {
             val authResult = dataSource.register(email, password)
             val firebaseUser = authResult.user
                     ?: return Result.failure(IllegalStateException("User is missing!"))
-            val userEmail = firebaseUser.email
-                    ?: return Result.failure(IllegalStateException("Email is missing!"))
+            dataSource.updateUserProfile(user = firebaseUser, name = name)
 
-            return Result.success(
-                value = UserData(
-                    uid = firebaseUser.uid,
-                    email = userEmail
-                )
-            )
+            dataSource.sendVerificationEmail(firebaseUser)
+            Result.success(Unit)
         }
         catch (exception : Exception) {
-            return Result.failure(exception)
+            Result.failure(exception)
         }
 
     }
@@ -99,6 +100,7 @@ class FirebaseAuthRepository (
             return Result.success(
                 UserData(
                     uid = firebaseUser.uid,
+                    name= firebaseUser.displayName.orEmpty(),
                     email = userEmail
                 )
             )
@@ -128,6 +130,41 @@ class FirebaseAuthRepository (
         return try{
             dataSource.forgotPassword(email)
             Result.success(Unit)
+        }catch(exception: Exception){
+            Result.failure(exception)
+        }
+    }
+
+    /**
+     * Sends another email verification link to the currently
+     * authenticated user.
+     * Returns a successful Result if the verification email
+     * is sent, or a failed Result if the request fails.
+     */
+
+    override suspend fun resendVerificationEmail(): Result<Unit> {
+        return try {
+            val firebaseUser = dataSource.getCurrentUser()?:return Result.failure(IllegalStateException("User is missing"))
+            dataSource.sendVerificationEmail(firebaseUser)
+            Result.success(Unit)
+        }catch (exception: Exception){
+            Result.failure(exception)
+        }
+    }
+
+    /**
+     * Refreshes the currently authenticated Firebase user
+     * and returns whether the user's email has been verified.
+     * Returns a failed Result if no authenticated user exists
+     * or if the refresh request fails.
+     */
+
+    override suspend fun isEmailVerified(): Result<Boolean> {
+        return try{
+            val firebaseUser = dataSource.getCurrentUser()?:return Result.failure(IllegalStateException("User is missing"))
+
+            dataSource.reloadUser(firebaseUser)
+            Result.success(firebaseUser.isEmailVerified)
         }catch(exception: Exception){
             Result.failure(exception)
         }

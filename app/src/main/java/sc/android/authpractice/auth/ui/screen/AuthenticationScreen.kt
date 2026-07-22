@@ -60,6 +60,8 @@ fun AuthenticationScreen(
             )
     }
 
+    val name = remember { mutableStateOf("") }
+
     val email = remember { mutableStateOf("") }
 
     val password = remember { mutableStateOf("") }
@@ -77,6 +79,7 @@ fun AuthenticationScreen(
                         password.value.length >= AuthValidator.MIN_PASSWORD_LENGTH
 
             AuthScreenMode.REGISTER ->
+                name.value.isNotBlank() &&
                 email.value.isNotBlank() &&
                         password.value.isNotBlank() &&
                         confirmPassword.value.isNotBlank() &&
@@ -97,6 +100,7 @@ fun AuthenticationScreen(
     }
 
     fun clearCredentials() {
+        name.value=""
         email.value = ""
         password.value = ""
         confirmPassword.value = ""
@@ -133,6 +137,8 @@ fun AuthenticationScreen(
 
             //content card
             AuthScreenCard(
+                name=name.value,
+                onNameChange = {name.value=it},
                 email = email.value,
                 onEmailChange = { email.value = it },
 
@@ -171,6 +177,7 @@ fun AuthenticationScreen(
 
                         AuthScreenMode.REGISTER ->
                             viewModel.register(
+                                name.value,
                                 email.value,
                                 password.value,
                                 confirmPassword.value
